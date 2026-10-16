@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from typing import Any
 
@@ -139,3 +140,23 @@ class AdminPanelServer(HTTPServer):
 def start_admin_panel(runtime: RuntimeState, host: str = "0.0.0.0", port: int = 8081) -> AdminPanelServer:
     server = AdminPanelServer((host, port), AdminPanelHandler, runtime)
     return server
+
+
+class AdminPanelAddon:
+    """Serves the admin panel from inside the mitmdump process so it shares the proxy's runtime state."""
+
+    def __init__(self, runtime: RuntimeState, host: str = "0.0.0.0", port: int = 8081):
+        self.runtime = runtime
+        self.host = host
+        self.port = port
+        self.server: AdminPanelServer | None = None
+
+    def running(self) -> None:
+        self.server = start_admin_panel(self.runtime, self.host, self.port)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        print(f"Admin panel listening on http://{self.host}:{self.port}")
+
+    def done(self) -> None:
+        if self.server is not None:
+            self.server.shutdown()
+            self.server.server_close()

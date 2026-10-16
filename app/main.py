@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -9,7 +8,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 try:
-    from app.admin_panel import start_admin_panel
+    from app.admin_panel import AdminPanelAddon
     from app.config import RouterConfig
     from app.runtime import RuntimeState
     from modules.admin.dashboard import AdminDashboardAddon
@@ -48,26 +47,10 @@ def build_addons(config: RouterConfig | None = None):
             }.items()
         }),
         AdminDashboardAddon(runtime=runtime),
+        AdminPanelAddon(runtime),
     ]
     return addon_list, runtime, logger
 
 
 addons, runtime, logger = build_addons()
 
-
-if __name__ == "__main__":
-    admin_server = start_admin_panel(runtime, host="0.0.0.0", port=8081)
-    _admin_thread = threading.Thread(target=admin_server.serve_forever, daemon=True)
-    _admin_thread.start()
-
-    logger.info("Cursed Router startup complete")
-    print("Cursed router ready.")
-    print("Admin panel listening on http://10.67.67.67:8081")
-    print("Installed addons:", len(addons))
-    print("Runtime state:", runtime.as_dict())
-    try:
-        _admin_thread.join()
-    except KeyboardInterrupt:
-        admin_server.shutdown()
-        admin_server.server_close()
-        print("Admin panel stopped.")

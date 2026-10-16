@@ -12,27 +12,24 @@ Cursed Router is a local-only, lab-network prank project: a mitmproxy-based traf
 
 ```bash
 pip install -r requirements.txt    # mitmproxy, PyYAML, Flask
-python scripts/start_all.py        # launches both processes together
+python scripts/start_all.py        # starts the proxy and admin panel
 ```
 
-`scripts/start_all.py` is the entry point. It spawns two long-lived processes and restarts nothing — if either exits it tears both down:
+`scripts/start_all.py` is the entry point. It runs a single **mitmdump** process on `listen_port=8080` with `app/main.py` as its addon script, passes its output through to the terminal, and exits with mitmdump's exit code. It locates `mitmdump` next to the running interpreter first (uv/venv) before falling back to PATH.
 
-- **mitmdump** on `listen_port=8080`, loading `app/main.py` as its addon script.
-- **Admin panel** HTTP server on `0.0.0.0:8081`.
-
-To run just the proxy manually: `mitmdump -s app/main.py --set listen_port=8080` (must run from the repo root so `app/main.py`'s `sys.path` insert and the `rules/default.yaml` relative path resolve). `start_all.py` locates `mitmdump` next to the running interpreter first (uv/venv) before falling back to PATH.
+The **admin panel** (`0.0.0.0:8081`) runs inside that same mitmdump process: `AdminPanelAddon` starts it on a background thread in mitmproxy's `running` hook. So `mitmdump -s app/main.py --set listen_port=8080` is equivalent to `start_all.py` (run it from the repo root so `app/main.py`'s `sys.path` insert and the `rules/default.yaml` relative path resolve). There is no way to run the proxy without the panel, and if port 8081 is already taken (e.g. a stale panel, or `mitmweb`'s default UI port) mitmdump aborts at startup with `Address already in use`. `python app/main.py` on its own starts nothing.
 
 There are no tests, linter, or typecheck config in the repo despite README mentions of a `tests/` dir. Shell tooling: use `rg`, `fd`, `eza`.
 
 ## Architecture
 
-Two independent processes share no live state with each other:
+Everything runs in one mitmdump process:
 
 1. **mitmproxy addon chain** (`app/main.py`). mitmproxy imports this module and reads its module-level `addons` list. `build_addons()` constructs that list from a `RouterConfig` loaded from `rules/default.yaml`. Each addon is a plain class implementing mitmproxy's `request(flow)` / `response(flow)` hooks — they mutate `flow.request` / set `flow.response` to redirect, rewrite, or inject. Order in the list is execution order.
 
-2. **Admin panel** (`app/admin_panel.py`). A stdlib `BaseHTTPRequestHandler` server (no Flask despite the requirement) that renders a dashboard, exposes `GET /api/state` and `POST /` (`{client_ip, mode}` → `runtime.set_mode`), and serves fake prank portal pages. It owns its own `RuntimeState`.
+2. **Admin panel** (`app/admin_panel.py`). A stdlib `BaseHTTPRequestHandler` server (no Flask despite the requirement) that renders a dashboard, exposes `GET /api/state` and `POST /` (`{client_ip, mode}` → `runtime.set_mode`), and serves fake prank portal pages. `AdminPanelAddon` (same file) hosts it inside mitmdump.
 
-Key seam / gotcha: `RuntimeState` (`app/runtime.py`) is per-process. `app/main.py` builds one for its addons; `start_all.py` starts the admin panel with a *separate* `RuntimeState()`. So mode changes made in the admin UI are **not** visible to the running proxy addons, and vice versa. Wiring these together (shared state / IPC) is the obvious missing piece.
+Key seam: `build_addons()` creates one `RuntimeState` (`app/runtime.py`) and hands it to both the admin panel and the addons, so they share live state (the panel's HTTP thread mutates it while mitmproxy's event loop reads it). However, no traffic addon reads `runtime` yet and nothing registers clients, so admin-panel mode changes don't affect traffic until an addon is wired to consult `runtime.active_modes` / `runtime.get_client()`.
 
 ### The addon chain (`modules/`)
 
