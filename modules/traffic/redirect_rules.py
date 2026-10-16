@@ -7,14 +7,14 @@ the local machine. See README.md "Scope & authorization".
 """
 from __future__ import annotations
 
+import subprocess
 from typing import Any
 
-from mitmproxy import http
+from mitmproxy import ctx, http
 
 from modules.gating import rule_enabled
 
 RULE = "redirects"
-
 
 
 class RedirectRuleAddon:
@@ -48,11 +48,11 @@ class RedirectRuleAddon:
                 "Cache-Control": "no-store",
             },
         )
-    
-    def response(flow: http.HTTPFlow) -> None:
-    # mitmproxy's built-in onboarding app serves the cert under /cert/pem etc.
-    # when a client successfully downloads it, treat them as "installing".
-    if flow.request.pretty_host == "mitm.it" and "/cert/" in flow.request.path:
-        client_ip = flow.client_conn.peername[0]
-        subprocess.run(["ipset", "add", "cert_installed", client_ip, "-exist"])
-        ctx.log.info(f"marked {client_ip} as cert-installed")
+
+    def response(self, flow: http.HTTPFlow) -> None:
+        # mitmproxy's built-in onboarding app serves the cert under /cert/pem etc.
+        # when a client successfully downloads it, treat them as "installing".
+        if flow.request.pretty_host == "mitm.it" and "/cert/" in flow.request.path:
+            client_ip = flow.client_conn.peername[0]
+            subprocess.run(["ipset", "add", "cert_installed", client_ip, "-exist"])
+            ctx.log.info(f"marked {client_ip} as cert-installed")
