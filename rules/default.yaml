@@ -3,6 +3,14 @@ portal_port: 8081
 mutators_enabled: true
 dns_server: "10.67.67.67"
 
+# Toggleable behaviours. The dashboard flips these per client; the values here
+# are the defaults applied to any client without an override.
+rules:
+  captive_portal: true
+  redirects: true
+  google_to_bing: false
+  mutators: true
+
 redirects:
   google.com: "http://10.67.67.67:8081/portal/google"
   github.com: "http://10.67.67.67:8081/portal/github"

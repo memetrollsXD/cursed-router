@@ -25,6 +25,7 @@ try:
     from modules.auth.magic_passwords import MagicPasswordAddon
     from modules.portal.captive_redirect import CaptivePortalAddon
     from modules.telemetry.logger import TelemetryLogger
+    from modules.traffic.client_tracker import ClientTrackerAddon
     from modules.traffic.google_to_bing import GoogleToBingAddon
     from modules.traffic.mutators import MutationAddon
     from modules.traffic.redirect_rules import RedirectRuleAddon
@@ -36,18 +37,23 @@ except ModuleNotFoundError as exc:
 
 def build_addons(config: RouterConfig | None = None):
     config = config or RouterConfig.from_file("rules/default.yaml")
-    runtime = RuntimeState()
+    runtime = RuntimeState(rules=dict(config.rules))
     logger = TelemetryLogger()
 
     addon_list = [
-        CaptivePortalAddon(portal_url=f"http://{config.portal_host}:{config.portal_port}/portal"),
+        ClientTrackerAddon(runtime=runtime),
+        CaptivePortalAddon(
+            portal_url=f"http://{config.portal_host}:{config.portal_port}/portal",
+            portal_host=config.portal_host,
+            runtime=runtime,
+        ),
         RedirectRuleAddon(config.redirects or {
             "google.com": f"http://{config.portal_host}:{config.portal_port}/portal/google",
             "github.com": f"http://{config.portal_host}:{config.portal_port}/portal/github",
             "adminpanel.com": f"http://{config.portal_host}:{config.portal_port}/",
-        }),
-        GoogleToBingAddon(),
-        MutationAddon(enabled=config.mutators_enabled),
+        }, runtime=runtime),
+        GoogleToBingAddon(runtime=runtime),
+        MutationAddon(enabled=config.mutators_enabled, runtime=runtime),
         MagicPasswordAddon({
             password: mode for password, mode in {
                 "banana": "banana_mode",
