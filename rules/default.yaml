@@ -1,0 +1,9 @@
+rules:
+  - name: cat-portal-for-device-7
+    client: device-7
+    domain: portal
+    action: cat-portal
+  - name: fake-google-redirect
+    domain: google.com
+    action: redirect
+    target: very-legal-search.example

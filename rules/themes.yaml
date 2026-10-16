@@ -1,0 +1,7 @@
+themes:
+  default:
+    banner: "The internet is fine."
+  banana-mode:
+    banner: "This page has gone bananas."
+  penguin-mode:
+    banner: "Welcome to the penguin edition."

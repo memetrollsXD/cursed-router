@@ -1,0 +1,7 @@
+services:
+  cursed-router:
+    image: python:3.12-slim
+    working_dir: /workspace
+    volumes:
+      - ./:/workspace
+    command: ["python", "-m", "app.cli", "status"]
