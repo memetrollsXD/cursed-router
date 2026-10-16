@@ -8,13 +8,16 @@ class RedirectRuleAddon:
 
     def __init__(self, redirects: dict[str, str] | None = None):
         self.redirects = redirects or {
-            "google.com": "http://10.0.0.1:8081/portal/google",
-            "github.com": "http://10.0.0.1:8081/portal/github",
-            "example.com": "http://10.0.0.1:8081/portal/example",
+            "google.com": "http://127.0.0.1:8081/",
+            "github.com": "http://127.0.0.1:8081/",
+            "example.com": "http://127.0.0.1:8081/",
+            "adminpanel.com": "http://127.0.0.1:8081/",
+            "10.67.67.67": "http://127.0.0.1:8081/",
         }
 
     def request(self, flow: http.HTTPFlow) -> None:
-        target = self.redirects.get(flow.request.host.lower())
+        host = flow.request.host.lower()
+        target = self.redirects.get(host)
         if not target:
             return
 
@@ -24,5 +27,6 @@ class RedirectRuleAddon:
             {
                 "Location": target,
                 "Content-Type": "text/plain; charset=utf-8",
+                "Cache-Control": "no-store",
             },
         )
