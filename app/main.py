@@ -1,3 +1,13 @@
+"""Cursed Router — mitmproxy addon entry point.
+
+SCOPE & AUTHORIZATION: local-only, lab-network prank appliance for a "useless projects"
+hackathon. Run only on networks and hardware you own or are explicitly permitted to test,
+with the knowing participation of connecting clients. This project never captures, stores,
+or exfiltrates credentials, form input, or any client secret; telemetry records local prank
+events only, not browsing contents. The MITM and captive-portal techniques here are the same
+primitives used by real attacks — the boundaries above are what keep this a prank. Do not
+deploy on shared, public, or unauthorized Wi-Fi. See README.md "Scope & authorization".
+"""
 from __future__ import annotations
 
 import sys
