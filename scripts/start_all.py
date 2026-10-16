@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PROXY_HOST = "10.67.67.67"
+PROXY_HOST = "0.0.0.0"
 PROXY_PORT = 8090
 WATCH_DIRS = ("app", "modules", "rules")
 WATCH_SUFFIXES = {".py", ".yaml", ".yml"}
