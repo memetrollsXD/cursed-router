@@ -1,3 +1,10 @@
+"""HTML mutation addon for the Cursed Router prank appliance.
+
+Part of a local-only, consensual "useless projects" hackathon build. Rewrites
+only cosmetic parts of HTML (title prefix, an injected banner) on a lab network
+whose users are in on the joke. It never reads, stores, or transmits form input,
+credentials, cookies, or any client secret. See README.md "Scope & authorization".
+"""
 from __future__ import annotations
 
 from typing import Any
