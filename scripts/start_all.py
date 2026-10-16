@@ -34,7 +34,9 @@ def start_admin_panel() -> subprocess.Popen[str]:
 
 
 def start_proxy() -> subprocess.Popen[str]:
-    mitmdump = shutil.which("mitmdump")
+    # The venv isn't necessarily activated, so look next to the running interpreter first.
+    venv_bin = str(Path(sys.executable).parent)
+    mitmdump = shutil.which("mitmdump", path=venv_bin) or shutil.which("mitmdump")
     if not mitmdump:
         raise RuntimeError("mitmdump is not installed or not on PATH. Install mitmproxy first.")
 
@@ -46,8 +48,8 @@ def main() -> int:
     ensure_root()
     print(f"Starting cursed-router services from {ROOT}")
 
-    admin = start_admin_panel()
     proxy = start_proxy()
+    admin = start_admin_panel()
 
     def shutdown(_signum, _frame) -> None:
         print("\nStopping services...")
