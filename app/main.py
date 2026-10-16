@@ -53,12 +53,13 @@ def build_addons(config: RouterConfig | None = None):
 
 
 addons, runtime, logger = build_addons()
-admin_server = start_admin_panel(runtime, host="0.0.0.0", port=8081)
-_admin_thread = threading.Thread(target=admin_server.serve_forever, daemon=True)
-_admin_thread.start()
 
 
 if __name__ == "__main__":
+    admin_server = start_admin_panel(runtime, host="0.0.0.0", port=8081)
+    _admin_thread = threading.Thread(target=admin_server.serve_forever, daemon=True)
+    _admin_thread.start()
+
     logger.info("Cursed Router startup complete")
     print("Cursed router ready.")
     print("Admin panel listening on http://10.67.67.67:8081")
