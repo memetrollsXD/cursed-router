@@ -1,3 +1,10 @@
+"""Captive-portal redirect addon for the Cursed Router prank appliance.
+
+Part of a local-only, consensual "useless projects" hackathon build. Answers the
+OS connectivity probes with a redirect to a local, obviously-theatrical portal on
+a lab network whose users are in on the joke. It captures no credentials and
+exfiltrates nothing off the local machine. See README.md "Scope & authorization".
+"""
 from __future__ import annotations
 
 from typing import Any

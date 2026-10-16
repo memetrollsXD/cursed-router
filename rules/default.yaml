@@ -15,8 +15,12 @@ redirects:
   google.com: "http://10.67.67.67:8081/portal/google"
   github.com: "http://10.67.67.67:8081/portal/github"
   youtube.com: "http://10.67.67.67:8081/portal/youtube"
-  admin.com: "http://10.67.67.67:8081/"
-  adminpanel.com: "http://10.67.67.67:8081/"
+
+# Hosts the dashboard is served on directly (no redirect — the admin.com URL
+# stays put). Handled by AdminHostAddon, not the redirect map above.
+admin_hosts:
+  - admin.com
+  - adminpanel.com
 
 magic_passwords:
   - banana

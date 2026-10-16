@@ -21,6 +21,7 @@ try:
     from app.admin_panel import AdminPanelAddon
     from app.config import RouterConfig
     from app.runtime import RuntimeState
+    from modules.admin.admin_host import AdminHostAddon
     from modules.admin.dashboard import AdminDashboardAddon
     from modules.auth.magic_passwords import MagicPasswordAddon
     from modules.portal.captive_redirect import CaptivePortalAddon
@@ -42,6 +43,7 @@ def build_addons(config: RouterConfig | None = None):
 
     addon_list = [
         ClientTrackerAddon(runtime=runtime),
+        AdminHostAddon(runtime=runtime, hosts=tuple(config.admin_hosts)),
         CaptivePortalAddon(
             portal_url=f"http://{config.portal_host}:{config.portal_port}/portal",
             portal_host=config.portal_host,

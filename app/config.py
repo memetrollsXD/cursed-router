@@ -20,6 +20,7 @@ class RouterConfig:
     mutators_enabled: bool = True
     rules_path: str = "rules/default.yaml"
     redirects: dict[str, str] = field(default_factory=dict)
+    admin_hosts: list[str] = field(default_factory=lambda: ["admin.com", "adminpanel.com"])
     rules: dict[str, bool] = field(default_factory=dict)
     magic_passwords: list[str] = field(default_factory=lambda: ["banana", "echo", "penguin", "toaster"])
 
@@ -33,6 +34,7 @@ class RouterConfig:
             loaded = yaml.safe_load(handle) or {}
 
         redirects = loaded.get("redirects", {}) or {}
+        admin_hosts = loaded.get("admin_hosts", []) or ["admin.com", "adminpanel.com"]
         rules = loaded.get("rules", {}) or {}
         magic_passwords = loaded.get("magic_passwords", []) or []
         mutators_enabled = bool(loaded.get("mutators_enabled", True))
@@ -47,6 +49,7 @@ class RouterConfig:
             mutators_enabled=mutators_enabled,
             rules_path=str(config_path),
             redirects={str(k): str(v) for k, v in redirects.items()},
+            admin_hosts=[str(h) for h in admin_hosts],
             rules=rules,
             magic_passwords=[str(item) for item in magic_passwords],
         )
@@ -58,6 +61,7 @@ class RouterConfig:
             "dns_server": self.dns_server,
             "mutators_enabled": self.mutators_enabled,
             "redirects": self.redirects,
+            "admin_hosts": self.admin_hosts,
             "rules": self.rules,
             "magic_passwords": self.magic_passwords,
         }
