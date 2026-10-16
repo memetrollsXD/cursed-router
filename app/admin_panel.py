@@ -1,3 +1,10 @@
+"""Admin panel for the Cursed Router prank appliance.
+
+Part of a local-only, consensual "useless projects" hackathon build. Serves a
+dashboard and obviously-theatrical portal pages on the lab network and toggles
+prank "modes". It stores no client credentials or browsing contents and sends
+nothing off the local machine. See README.md "Scope & authorization".
+"""
 from __future__ import annotations
 
 import json
