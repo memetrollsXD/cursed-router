@@ -50,3 +50,13 @@ Each module is a self-contained mitmproxy addon; add a new behavior by writing a
 ## Conventions
 
 Addons stay small and single-purpose (one file, one behavior). Behavior should be config/YAML-driven rather than hardcoded where practical. All modules use `from __future__ import annotations` and modern type hints.
+
+## Todos
+
+`todo-rutger.md` is Rutger's task checklist. Each task is a Markdown checkbox; keep the state marker current as work moves:
+
+- `- [ ]` — not started
+- `- [~]` — in progress (set this when you pick up a task)
+- `- [x]` — complete
+
+When you start working on one of these tasks, flip its box to `~`; when it's done, flip it to `x`. Don't delete completed items or restructure the list.
