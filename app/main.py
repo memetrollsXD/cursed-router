@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import threading
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -8,6 +9,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 try:
+    from app.admin_panel import start_admin_panel
     from app.config import RouterConfig
     from app.runtime import RuntimeState
     from modules.admin.dashboard import AdminDashboardAddon
@@ -24,7 +26,7 @@ except ModuleNotFoundError as exc:
 
 
 def build_addons(config: RouterConfig | None = None):
-    config = config or RouterConfig()
+    config = config or RouterConfig.from_file("rules/default.yaml")
     runtime = RuntimeState()
     logger = TelemetryLogger()
 
@@ -33,6 +35,7 @@ def build_addons(config: RouterConfig | None = None):
         RedirectRuleAddon(config.redirects or {
             "google.com": f"http://{config.portal_host}:{config.portal_port}/portal/google",
             "github.com": f"http://{config.portal_host}:{config.portal_port}/portal/github",
+            "adminpanel.com": f"http://{config.portal_host}:{config.portal_port}/",
         }),
         GoogleToBingAddon(),
         MutationAddon(enabled=config.mutators_enabled),
@@ -50,10 +53,20 @@ def build_addons(config: RouterConfig | None = None):
 
 
 addons, runtime, logger = build_addons()
+admin_server = start_admin_panel(runtime, host="0.0.0.0", port=8081)
+_admin_thread = threading.Thread(target=admin_server.serve_forever, daemon=True)
+_admin_thread.start()
 
 
 if __name__ == "__main__":
     logger.info("Cursed Router startup complete")
     print("Cursed router ready.")
+    print("Admin panel listening on http://10.67.67.67:8081")
     print("Installed addons:", len(addons))
     print("Runtime state:", runtime.as_dict())
+    try:
+        _admin_thread.join()
+    except KeyboardInterrupt:
+        admin_server.shutdown()
+        admin_server.server_close()
+        print("Admin panel stopped.")

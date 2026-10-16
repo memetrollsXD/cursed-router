@@ -14,9 +14,9 @@ except ModuleNotFoundError:  # pragma: no cover - optional dependency for non-ve
 class RouterConfig:
     """Runtime configuration for the router's MITM and portal behavior."""
 
-    portal_host: str = "10.0.0.1"
+    portal_host: str = "10.67.67.67"
     portal_port: int = 8081
-    dns_server: str = "10.0.0.1"
+    dns_server: str = "10.67.67.67"
     mutators_enabled: bool = True
     rules_path: str = "rules/default.yaml"
     redirects: dict[str, str] = field(default_factory=dict)
@@ -35,9 +35,9 @@ class RouterConfig:
         magic_passwords = loaded.get("magic_passwords", []) or []
 
         return cls(
-            portal_host=loaded.get("portal_host", "10.0.0.1"),
+            portal_host=loaded.get("portal_host", "10.67.67.67"),
             portal_port=int(loaded.get("portal_port", 8081)),
-            dns_server=loaded.get("dns_server", "10.0.0.1"),
+            dns_server=loaded.get("dns_server", "10.67.67.67"),
             mutators_enabled=bool(loaded.get("mutators_enabled", True)),
             rules_path=str(config_path),
             redirects={str(k): str(v) for k, v in redirects.items()},

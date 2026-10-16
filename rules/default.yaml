@@ -1,12 +1,13 @@
-portal_host: "10.0.0.1"
+portal_host: "10.67.67.67"
 portal_port: 8081
 mutators_enabled: true
-dns_server: "10.0.0.1"
+dns_server: "10.67.67.67"
 
 redirects:
-  google.com: "http://10.0.0.1:8081/portal/google"
-  github.com: "http://10.0.0.1:8081/portal/github"
-  youtube.com: "http://10.0.0.1:8081/portal/youtube"
+  google.com: "http://10.67.67.67:8081/portal/google"
+  github.com: "http://10.67.67.67:8081/portal/github"
+  youtube.com: "http://10.67.67.67:8081/portal/youtube"
+  adminpanel.com: "http://10.67.67.67:8081/"
 
 magic_passwords:
   - banana
