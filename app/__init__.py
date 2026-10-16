@@ -1,0 +1,1 @@
+"""Cursed Router application package."""

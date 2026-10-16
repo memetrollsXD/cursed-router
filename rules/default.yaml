@@ -1,0 +1,16 @@
+portal_host: "10.0.0.1"
+portal_port: 8081
+mutators_enabled: true
+dns_server: "10.0.0.1"
+
+redirects:
+  google.com: "http://10.0.0.1:8081/portal/google"
+  github.com: "http://10.0.0.1:8081/portal/github"
+  youtube.com: "http://10.0.0.1:8081/portal/youtube"
+
+magic_passwords:
+  - banana
+  - echo
+  - penguin
+  - toaster
+  - quasar
