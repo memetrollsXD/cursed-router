@@ -13,7 +13,6 @@ rules:
 
 redirects:
   google.com: "http://10.67.67.67:8081/portal/google"
-  github.com: "http://10.67.67.67:8081/portal/github"
   youtube.com: "http://10.67.67.67:8081/portal/youtube"
 
 # Hosts the dashboard is served on directly (no redirect — the admin.com URL
