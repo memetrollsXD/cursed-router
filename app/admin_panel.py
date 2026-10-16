@@ -38,6 +38,10 @@ class AdminPanelHandler(BaseHTTPRequestHandler):
             self.send_error(400, "Invalid JSON")
             return
 
+        if self.path == "/api/rule":
+            self._handle_rule(data)
+            return
+
         client_ip = data.get("client_ip")
         mode = data.get("mode")
         if not client_ip or not mode:
@@ -45,10 +49,26 @@ class AdminPanelHandler(BaseHTTPRequestHandler):
             return
 
         self.server.runtime.set_mode(client_ip, mode)
+        self._send_json({"status": "ok", "client_ip": client_ip, "mode": mode})
+
+    def _handle_rule(self, data: dict[str, Any]) -> None:
+        rule = data.get("rule")
+        if not rule or "enabled" not in data:
+            self.send_error(400, "rule and enabled are required")
+            return
+
+        client_ip = data.get("client_ip") or None
+        enabled = bool(data.get("enabled"))
+        self.server.runtime.set_rule(client_ip, rule, enabled)
+        self._send_json({"status": "ok", "client_ip": client_ip or "*", "rule": rule, "enabled": enabled})
+
+    def _send_json(self, payload: dict[str, Any]) -> None:
+        body = json.dumps(payload).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(json.dumps({"status": "ok", "client_ip": client_ip, "mode": mode}).encode("utf-8"))
+        self.wfile.write(body)
 
     def log_message(self, format: str, *args: Any) -> None:
         return
@@ -80,23 +100,18 @@ class AdminPanelHandler(BaseHTTPRequestHandler):
         <body>
             <h1>🛠️ Cursed Router Admin</h1>
             <div class="card">
-                <h2>Client Mood Control</h2>
-                <input id="clientIp" placeholder="192.168.1.12" value="192.168.1.12" />
-                <select id="modeSelect">
-                    <option value="default">default</option>
-                    <option value="banana_mode">banana_mode</option>
-                    <option value="echo_mode">echo_mode</option>
-                    <option value="penguin_mode">penguin_mode</option>
-                    <option value="toaster_mode">toaster_mode</option>
-                </select>
-                <button onclick="sendMode()">Apply Curse</button>
+                <h2>Rule Defaults</h2>
+                <p>Applied to any client without its own override.</p>
+                <table>
+                    <thead><tr><th>Rule</th><th>Default</th></tr></thead>
+                    <tbody id="defaultsTable"></tbody>
+                </table>
             </div>
             <div class="card">
-                <h2>Connected Clients</h2>
+                <h2>Per-Client Rules</h2>
+                <p>Tick a box to enable a rule for that client; untick to disable it.</p>
                 <table>
-                    <thead>
-                        <tr><th>Client</th><th>Mode</th><th>Portal</th></tr>
-                    </thead>
+                    <thead><tr id="clientHead"><th>Client</th></tr></thead>
                     <tbody id="clientTable"></tbody>
                 </table>
             </div>
@@ -105,22 +120,66 @@ class AdminPanelHandler(BaseHTTPRequestHandler):
                 <pre id="logBox">Loading...</pre>
             </div>
             <script>
+                function checkbox(ip, rule, enabled) {
+                    const box = document.createElement('input');
+                    box.type = 'checkbox';
+                    box.checked = enabled;
+                    box.onchange = () => setRule(ip, rule, box.checked);
+                    return box;
+                }
                 async function fetchState() {
                     const res = await fetch('/api/state');
                     const data = await res.json();
+                    const rules = Object.keys(data.rules || {}).sort();
+
+                    const defaults = document.getElementById('defaultsTable');
+                    defaults.innerHTML = '';
+                    for (const rule of rules) {
+                        const tr = document.createElement('tr');
+                        const name = document.createElement('td');
+                        name.textContent = rule;
+                        const toggle = document.createElement('td');
+                        toggle.appendChild(checkbox('*', rule, data.rules[rule]));
+                        tr.appendChild(name);
+                        tr.appendChild(toggle);
+                        defaults.appendChild(tr);
+                    }
+
+                    const head = document.getElementById('clientHead');
+                    head.innerHTML = '<th>Client</th><th>Portal</th>';
+                    for (const rule of rules) {
+                        const th = document.createElement('th');
+                        th.textContent = rule;
+                        head.appendChild(th);
+                    }
+
                     const tbody = document.getElementById('clientTable');
                     tbody.innerHTML = '';
                     const clients = data.clients || {};
                     for (const [ip, info] of Object.entries(clients)) {
                         const tr = document.createElement('tr');
-                        tr.innerHTML = '<td>' + ip + '</td><td>' + (info.mode || 'default') + '</td><td>' + (info.portal_seen ? 'yes' : 'no') + '</td>';
+                        const ipCell = document.createElement('td');
+                        ipCell.textContent = ip;
+                        tr.appendChild(ipCell);
+                        const portalCell = document.createElement('td');
+                        portalCell.textContent = info.portal_seen ? 'yes' : 'no';
+                        tr.appendChild(portalCell);
+                        const clientRules = info.rules || {};
+                        for (const rule of rules) {
+                            const cell = document.createElement('td');
+                            cell.appendChild(checkbox(ip, rule, clientRules[rule]));
+                            tr.appendChild(cell);
+                        }
                         tbody.appendChild(tr);
                     }
+                    if (!Object.keys(clients).length) {
+                        tbody.innerHTML = '<tr><td colspan="' + (rules.length + 2) + '">No clients seen yet.</td></tr>';
+                    }
+
                     document.getElementById('logBox').textContent = (data.logs || []).join('\n') || 'No events yet.';
                 }
-                async function sendMode() {
-                    const payload = { client_ip: document.getElementById('clientIp').value, mode: document.getElementById('modeSelect').value };
-                    await fetch('/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                async function setRule(clientIp, rule, enabled) {
+                    await fetch('/api/rule', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_ip: clientIp, rule, enabled }) });
                     await fetchState();
                 }
                 setInterval(fetchState, 2000);

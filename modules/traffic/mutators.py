@@ -1,16 +1,26 @@
 from __future__ import annotations
 
+from typing import Any
+
 from mitmproxy import http
+
+from modules.gating import rule_enabled
+
+RULE = "mutators"
 
 
 class MutationAddon:
     """Mutates HTML content in a harmless but theatrical way."""
 
-    def __init__(self, enabled: bool = True):
+    def __init__(self, enabled: bool = True, runtime: Any | None = None):
         self.enabled = enabled
+        self.runtime = runtime
 
     def response(self, flow: http.HTTPFlow) -> None:
         if not self.enabled:
+            return
+
+        if not rule_enabled(self.runtime, flow, RULE):
             return
 
         if not flow.response or not flow.response.content:
