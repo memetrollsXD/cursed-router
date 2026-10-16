@@ -15,9 +15,9 @@ pip install -r requirements.txt    # mitmproxy, PyYAML, Flask
 python scripts/start_all.py        # starts the proxy and admin panel
 ```
 
-`scripts/start_all.py` is the entry point. It runs a single **mitmdump** process on `listen_port=8080` with `app/main.py` as its addon script, passes its output through to the terminal, and exits with mitmdump's exit code. It locates `mitmdump` next to the running interpreter first (uv/venv) before falling back to PATH.
+`scripts/start_all.py` is the entry point. It runs a single **mitmdump** process on `listen_port=8090` with `app/main.py` as its addon script, passes its output through to the terminal, and exits with mitmdump's exit code. It locates `mitmdump` next to the running interpreter first (uv/venv) before falling back to PATH.
 
-The **admin panel** (`0.0.0.0:8081`) runs inside that same mitmdump process: `AdminPanelAddon` starts it on a background thread in mitmproxy's `running` hook. So `mitmdump -s app/main.py --set listen_port=8080` is equivalent to `start_all.py` (run it from the repo root so `app/main.py`'s `sys.path` insert and the `rules/default.yaml` relative path resolve). There is no way to run the proxy without the panel, and if port 8081 is already taken (e.g. a stale panel, or `mitmweb`'s default UI port) mitmdump aborts at startup with `Address already in use`. `python app/main.py` on its own starts nothing.
+The **admin panel** (`0.0.0.0:8081`) runs inside that same mitmdump process: `AdminPanelAddon` starts it on a background thread in mitmproxy's `running` hook. So `mitmdump -s app/main.py --set listen_port=8090` is equivalent to `start_all.py` (run it from the repo root so `app/main.py`'s `sys.path` insert and the `rules/default.yaml` relative path resolve). There is no way to run the proxy without the panel, and if port 8081 is already taken (e.g. a stale panel, or `mitmweb`'s default UI port) mitmdump aborts at startup with `Address already in use`. `python app/main.py` on its own starts nothing.
 
 There are no tests, linter, or typecheck config in the repo despite README mentions of a `tests/` dir. Shell tooling: use `rg`, `fd`, `eza`.
 

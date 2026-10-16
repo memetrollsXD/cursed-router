@@ -9,6 +9,7 @@ from modules.gating import rule_enabled
 RULE = "redirects"
 
 
+
 class RedirectRuleAddon:
     """Simple host-based redirect engine for local-only prank traffic."""
 
