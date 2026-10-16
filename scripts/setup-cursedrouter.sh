@@ -21,7 +21,7 @@
 set -euo pipefail
 
 APIF="${1:-wlan1}"
-AP_IP="${2:-10.67.67.67}"
+AP_IP="${2:-10.66.0.1}"
 FINAL_PROXY="${3:-}"   # leave empty to skip upstream chaining (mitm-active just acts as a normal MITM, no onward proxy)
 
 BASE_DIR=/opt/cursed-router
@@ -54,8 +54,17 @@ else
 fi
 
 # ---------- ipset ----------
-log "Creating ipset '$IPSET_NAME' (idempotent)"
-ipset create "$IPSET_NAME" hash:ip -exist
+# `-exist` only suppresses the "already exists" error when the existing
+# set's parameters match exactly. If a set with this name exists but was
+# created with different options (e.g. a `timeout` you added by hand
+# earlier), `-exist` does NOT save you — ipset still refuses. So check
+# existence explicitly instead of trusting that flag.
+log "Ensuring ipset '$IPSET_NAME' exists (idempotent, param-mismatch safe)"
+if ipset list -n 2>/dev/null | grep -qx "$IPSET_NAME"; then
+    log "ipset '$IPSET_NAME' already exists, leaving it as-is (not recreating)"
+else
+    ipset create "$IPSET_NAME" hash:ip
+fi
 
 cat > /etc/systemd/system/ipset-restore.service <<EOF
 [Unit]
@@ -65,7 +74,9 @@ Wants=network-pre.target
 
 [Service]
 Type=oneshot
-ExecStartPre=/sbin/ipset create $IPSET_NAME hash:ip -exist
+# plain shell, not ipset's own -exist: same param-mismatch problem applies
+# at boot too, so check-then-create instead of relying on -exist here as well.
+ExecStartPre=/bin/sh -c '/sbin/ipset list -n | grep -qx $IPSET_NAME || /sbin/ipset create $IPSET_NAME hash:ip'
 ExecStart=/sbin/ipset restore -file /etc/ipset.conf -exist
 RemainAfterExit=yes
 
