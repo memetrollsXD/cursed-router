@@ -9,6 +9,9 @@ redirects:
   youtube.com: "http://10.67.67.67:8081/portal/youtube"
   adminpanel.com: "http://10.67.67.67:8081/"
 
+html_injection:
+  google.com: "<script>alert(1)</script>"
+
 magic_passwords:
   - banana
   - echo
