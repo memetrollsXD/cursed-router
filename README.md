@@ -1,5 +1,28 @@
 # Cursed Router
 
+_A local-only, consensual Wi-Fi prank toy for a "useless projects" hackathon — not a surveillance or attack tool. No credential capture, no data exfiltration. See scope below._
+
+> **Scope & authorization — read first.**
+> Cursed Router is a local-only, lab-network novelty project built for a "useless projects"
+> hackathon. It is a theatrical prank appliance, **not** a surveillance or attack tool.
+>
+> **Authorized use:** only on networks and hardware you own or are explicitly permitted to
+> test on, with the knowing participation of the people connecting to it.
+>
+> **Hard boundaries this project commits to:**
+> - **No credential capture.** It never collects, stores, or transmits passwords, form input,
+>   cookies, tokens, or any secret a client enters on an intercepted page.
+> - **No real-user data retention.** Telemetry logs local prank events (modes toggled, pages
+>   mutated) — not the contents of anyone's browsing.
+> - **No exfiltration.** Nothing intercepted leaves the local machine.
+> - **Visible, consensual theater.** Interventions (banners, redirects, silly portals) are meant
+>   to be obvious and funny, not deceptive for gain.
+>
+> **Do not** deploy on shared, public, corporate, or otherwise unauthorized Wi-Fi, and do not
+> use it to intercept traffic from people who have not agreed to the bit. The man-in-the-middle
+> and captive-portal techniques here are the same primitives used by real attacks — keeping to
+> the boundaries above is what makes this a prank instead of an intrusion.
+
 A chaotic, modular Wi-Fi access point project for a useless-hackathon build: a router that behaves less like a network device and more like a prank-powered appliance. The goal is not to take over the internet; the goal is to turn a normal hotspot into a delightfully absurd, story-driven local network experience using hostapd as the access point and a collection of modules for captive portals, traffic weirdness, and manual client trolling.
 
 This project is intentionally silly, experimental, and built for local-only lab environments. It is meant to be a creative engineering exercise: "what if your router had personality?"
@@ -16,7 +39,7 @@ The Cursed Router is a playground for:
 - experimenting with Wi-Fi policy, client auth, and local routing
 - exploring captive portal flows and browser redirection behavior
 - creating harmless but absurd web “interventions” for local-only demo networks
-- giving an admin panel a weirdly dramatic amount of power over connected clients
+- giving an admin panel a weirdly dramatic (but purely cosmetic, local-only) amount of flair over connected clients
 
 It is for hackathons, demos, and local experiments. It is not for production deployments or real-world public Wi-Fi.
 

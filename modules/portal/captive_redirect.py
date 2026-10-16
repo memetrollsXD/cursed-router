@@ -1,13 +1,33 @@
+"""Captive-portal redirect addon for the Cursed Router prank appliance.
+
+Part of a local-only, consensual "useless projects" hackathon build. Answers the
+OS connectivity probes with a redirect to a local, obviously-theatrical portal on
+a lab network whose users are in on the joke. It captures no credentials and
+exfiltrates nothing off the local machine. See README.md "Scope & authorization".
+"""
 from __future__ import annotations
 
+from typing import Any
+
 from mitmproxy import http
+
+from modules.gating import rule_enabled
+
+RULE = "captive_portal"
 
 
 class CaptivePortalAddon:
     """Intercepts common captive portal probes and redirects browsers to a local fake portal."""
 
-    def __init__(self, portal_url: str = "http://10.0.0.1:8081/portal"):
+    def __init__(
+        self,
+        portal_url: str = "http://10.67.67.67:8081/portal",
+        portal_host: str = "10.67.67.67",
+        runtime: Any | None = None,
+    ):
         self.portal_url = portal_url
+        self.portal_host = portal_host
+        self.runtime = runtime
         self.portal_hosts = {
             "connectivitycheck.gstatic.com",
             "clients3.google.com",
@@ -18,6 +38,9 @@ class CaptivePortalAddon:
         }
 
     def request(self, flow: http.HTTPFlow) -> None:
+        if not rule_enabled(self.runtime, flow, RULE):
+            return
+
         host = flow.request.pretty_host.lower()
         if host in self.portal_hosts:
             flow.response = http.Response.make(
@@ -32,7 +55,7 @@ class CaptivePortalAddon:
             )
             return
 
-        if flow.request.host == "10.0.0.1" and flow.request.path.startswith("/portal"):
+        if flow.request.host == self.portal_host and flow.request.path.startswith("/portal"):
             flow.response = http.Response.make(
                 200,
                 b"""
