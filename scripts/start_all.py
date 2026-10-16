@@ -7,7 +7,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PROXY_PORT = 8080
+PROXY_HOST = "10.67.67.67"
+PROXY_PORT = 8090
 WATCH_DIRS = ("app", "modules", "rules")
 WATCH_SUFFIXES = {".py", ".yaml", ".yml"}
 POLL_SECONDS = 1.0
@@ -44,7 +45,11 @@ def stop(proc: subprocess.Popen) -> None:
 
 def main() -> int:
     print(f"Starting cursed-router from {ROOT}", flush=True)
-    cmd = [find_mitmdump(), "-q", "-s", "app/main.py", "--set", f"listen_port={PROXY_PORT}"]
+    cmd = [
+        find_mitmdump(), "-q", "-s", "app/main.py",
+        "--set", f"listen_host={PROXY_HOST}",
+        "--set", f"listen_port={PROXY_PORT}",
+    ]
     proc = subprocess.Popen(cmd, cwd=ROOT)
     sources = snapshot_sources()
     try:
