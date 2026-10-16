@@ -102,7 +102,7 @@ def render_dashboard() -> str:
                         tbody.innerHTML = '<tr><td colspan="' + (rules.length + 2) + '">No clients seen yet.</td></tr>';
                     }
 
-                    document.getElementById('logBox').textContent = (data.logs || []).join('\n') || 'No events yet.';
+                    document.getElementById('logBox').textContent = (data.logs || []).join('\\n') || 'No events yet.';
                 }
                 async function setRule(clientIp, rule, enabled) {
                     await fetch('/api/rule', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ client_ip: clientIp, rule, enabled }) });
